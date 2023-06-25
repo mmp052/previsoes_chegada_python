@@ -1,9 +1,8 @@
 import requests
 from tube import TubeStop
 from bus import BusStop
+from statistics_1 import make_csv
 
-# Defina sua chave de API do TfL
-api_key = '865fab2ef35943fb91bfc7eeedcfcef1'
 tube_stops = []
 bus_stops = []
 
@@ -21,7 +20,7 @@ while True:
 
     if opcao == 1:
         station = input('Digite o nome da estação: ')
-        url = f'https://api.tfl.gov.uk/StopPoint/Search?query={station}&modes=bus&app_id=&app_key={api_key}'
+        url = f'https://api.tfl.gov.uk/StopPoint/Search?query={station}&modes=bus'
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -33,14 +32,16 @@ while True:
                 for stop in data['matches']:
                     stop_id = stop['id']
                     bus_stops.append(BusStop(stop_id))
+
+                make_csv(bus_stops, 1)
                 
                 for bus_stop in bus_stops:
-                    if not bus_stop.error:
+                    if not bus_stop.error:  
                         print(f'Estação {bus_stop.name}:')
 
                         if bus_stop.arrivals:
                             for arrival in bus_stop.arrivals:
-                                print(f'\tTrem {arrival.lineName} para {arrival.destinationName}: Chegada esperada às {arrival.expectedArrival[11:16]}')
+                                print(f'\tÔnibus {arrival.lineName} para {arrival.destinationName}: Chegada esperada às {arrival.expectedArrival[11:16]}')
                         else:
                             print('Não foi possivel pegar as previsoes dessa estação')      
                     else:
@@ -51,7 +52,7 @@ while True:
 
     if opcao == 2:
         station = input('Digite o nome da estação: ')
-        url = f'https://api.tfl.gov.uk/StopPoint/Search?query={station}&modes=tube&app_id=&app_key={api_key}'
+        url = f'https://api.tfl.gov.uk/StopPoint/Search?query={station}&modes=tube'
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -64,6 +65,8 @@ while True:
                     stop_id = stop['id']
                     tube_stops.append(TubeStop(stop_id))
                 
+                make_csv(tube_stops, 2)
+
                 for tube_stop in tube_stops:
                     if not tube_stop.error:
                         print(f'Estação {tube_stop.name}:')
